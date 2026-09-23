@@ -1,5 +1,20 @@
 namespace AI_Travel_Inspector.Models;
 
+public class TravelPlan
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Title { get; set; } = "";
+    public string Destination { get; set; } = "";
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public List<string> Travelers { get; set; } = new();
+    public string Summary { get; set; } = "";
+    public List<TripSegment> Segments { get; set; } = new();
+    public List<TravelDocument> Documents { get; set; } = new();
+    public List<ChatTurn> ChatHistory { get; set; } = new();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
 public class TripSegment
 {
     public string Type { get; set; } = "Other";
