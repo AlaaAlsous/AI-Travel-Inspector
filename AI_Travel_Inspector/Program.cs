@@ -80,9 +80,50 @@ app.MapPost("/api/plan", async (
     }
 }).DisableAntiforgery();
 
+app.MapPost("/api/travel/{id}/chat", async (
+    string id,
+    ChatRequest request,
+    GenerativeAiService generativeService,
+    ITravelRepository repository) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Message))
+        return Results.BadRequest(new { error = "Message is empty." });
+
+    var plan = await repository.GetAsync(id);
+    if (plan is null)
+        return Results.NotFound(new { error = "Trip not found." });
+
+    try
+    {
+        var history = plan.ChatHistory.ToList();
+        var answer = await generativeService.ChatAsync(plan, request.Message, history);
+
+        history.Add(new ChatTurn { Role = "user", Content = request.Message });
+        history.Add(new ChatTurn { Role = "assistant", Content = answer });
+        plan.ChatHistory = history;
+
+        await repository.UpdateAsync(plan);
+
+        return Results.Ok(new { answer, history = plan.ChatHistory });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Chat failed",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+}).DisableAntiforgery();
+
+
 app.Run();
 
 public class PlanRequest
 {
     public List<TravelDocument> Documents { get; set; } = new();
+}
+
+public class ChatRequest
+{
+    public string Message { get; set; } = "";
 }
