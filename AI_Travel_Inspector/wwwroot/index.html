@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>✈️ AI Travel Inspector</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>✈️ AI Travel Inspector</h1>
+        <p class="lead">
+          Upload your booking files to create your travel plan, then chat with
+          your AI travel assistant below.
+        </p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="col-left">
+        <section class="panel">
+          <h2>1 · Add files</h2>
+          <label class="dropzone" id="dropzone" for="fileInput">
+            <input
+              type="file"
+              id="fileInput"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp"
+            />
+            <span class="dropzone-icon">📄</span>
+            <span class="dropzone-text" id="dropzoneText"
+              >Choose files or drag them here</span
+            >
+            <span class="hint">PDF · PNG · JPG · JPEG · TIFF · BMP</span>
+          </label>
+          <button id="analyzeBtn" class="btn btn-block" onclick="analyze()">
+            Extract Travel Information
+          </button>
+          <p id="status" class="status"></p>
+        </section>
+
+        <section class="panel" id="documentsCard" hidden>
+          <h2>2 · Documents</h2>
+          <ul id="documentList" class="list"></ul>
+          <button
+            id="planBtn"
+            class="btn btn-primary btn-block"
+            onclick="buildPlan()"
+          >
+            ✨ Generate Travel Summary
+          </button>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Saved Trips</h2>
+            <button
+              type="button"
+              class="collapse-btn"
+              aria-expanded="true"
+              onclick="togglePanel(this)"
+              title="Minimize / expand"
+            >
+              <svg
+                class="icon chevron"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+          <div class="panel-body">
+            <ul id="travelList" class="list"></ul>
+          </div>
+        </section>
+      </aside>
+
+      <main class="col-right">
+        <section class="panel" id="planCard" hidden>
+          <div class="panel-head">
+            <h2 id="planTitle">Your Trip</h2>
+            <div class="head-actions">
+              <button id="editPlanBtn" class="btn btn-sm">Edit</button>
+              <button id="deletePlanBtn" class="btn btn-danger btn-sm">
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="collapse-btn"
+                aria-expanded="true"
+                onclick="togglePanel(this)"
+                title="Minimize / expand"
+              >
+                <svg
+                  class="icon chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <p class="meta" id="planMeta"></p>
+            <div class="travelers" id="travelersList"></div>
+            <p class="summary" id="planSummary"></p>
+            <div id="segmentsList" class="segments"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="editCard" hidden>
+          <div class="panel-head">
+            <h2>Edit Trip</h2>
+            <div class="head-actions">
+              <button id="editCancelBtn" class="btn btn-ghost btn-sm">
+                Cancel
+              </button>
+              <button id="editSaveBtn" class="btn btn-primary btn-sm">
+                Save & Update Trip
+              </button>
+            </div>
+          </div>
+          <p class="hint-block">
+            Add new bookings or remove files you no longer need. The AI rebuilds
+            your plan using the files you keep.
+          </p>
+          <ul id="editDocumentList" class="list"></ul>
+          <label class="dropzone dropzone-sm" for="editFileInput">
+            <input
+              type="file"
+              id="editFileInput"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp"
+            />
+            <span class="dropzone-text" id="editDropzoneText"
+              >Add More Files…</span
+            >
+          </label>
+          <button id="editAddBtn" class="btn btn-block">Add files</button>
+          <p id="editStatus" class="status"></p>
+        </section>
+
+        <p class="placeholder">
+          Your trip plan is empty. Add your booking files and click "✨ Generate
+          Travel Summary" to get started.
+        </p>
+      </main>
+
+      <section class="panel col-full" id="chatCard" hidden>
+        <div class="panel-head">
+          <h2>Chat With The Agent</h2>
+          <div class="head-actions">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              id="clearChatBtn"
+            >
+              Clear Chat
+            </button>
+            <button
+              type="button"
+              class="collapse-btn"
+              aria-expanded="true"
+              onclick="togglePanel(this)"
+              title="Minimize / expand"
+            >
+              <svg
+                class="icon chevron"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="chatMessages" class="chat"></div>
+          <form id="chatForm" class="chat-form">
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Ask something about your trip..."
+              autocomplete="off"
+            />
+            <button type="submit" id="chatSendBtn" class="btn btn-primary">
+              Send
+            </button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" hidden>
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-icon">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18" />
+            <path d="M8 6V4h8v2" />
+            <path d="M19 6l-1 14H6L5 6" />
+            <path d="M10 11v6M14 11v6" />
+          </svg>
+        </div>
+        <h2 id="modalTitle">Delete This Trip?</h2>
+        <p id="modalMessage"></p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="btn btn-ghost">Cancel</button>
+          <button id="modalConfirm" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
