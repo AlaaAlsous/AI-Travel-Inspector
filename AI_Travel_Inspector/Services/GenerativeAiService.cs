@@ -108,6 +108,38 @@ public class GenerativeAiService
         return plan;
     }
 
+    private static string BuildPlanPrompt(IReadOnlyList<TravelDocument> documents)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Below is the raw text of one or more travel booking documents ");
+        builder.AppendLine("(flights, hotels, transfers, activities, etc.).");
+        builder.AppendLine("Extract every booking into the structured travel plan.");
+        builder.AppendLine();
+        builder.AppendLine("Rules:");
+        builder.AppendLine("- Create one segment per booking you can find.");
+        builder.AppendLine("- Use ISO 8601 dates/times (e.g. 2026-07-15 or 2026-07-15T16:55:00).");
+        builder.AppendLine("- Use empty strings for unknown fields, never null.");
+        builder.AppendLine();
+        builder.AppendLine("--- DOCUMENTS ---");
+
+        foreach (var doc in documents)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"=== {doc.FileName} ===");
+            builder.AppendLine(Truncate(doc.Text, 12_000));
+        }
+
+        return builder.ToString();
+    }
+
+    private static string Truncate(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+
+        return text[..maxLength] + "\n...[truncated]...";
+    }
+
     private class PlanDto
     {
         public string? Title { get; set; }
