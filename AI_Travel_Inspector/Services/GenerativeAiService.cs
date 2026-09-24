@@ -132,6 +132,41 @@ public class GenerativeAiService
         return builder.ToString();
     }
 
+    private static TravelPlan MapPlan(PlanDto dto)
+    {
+        return new TravelPlan
+        {
+            Title = dto.Title ?? "",
+            Destination = dto.Destination ?? "",
+            StartDate = ParseDate(dto.StartDate),
+            EndDate = ParseDate(dto.EndDate),
+            Travelers = dto.Travelers ?? new List<string>(),
+            Summary = dto.Summary ?? "",
+            Segments = (dto.Segments ?? new List<SegmentDto>())
+                .Select(s => new TripSegment
+                {
+                    Type = NormalizeType(s.Type),
+                    Title = s.Title ?? "",
+                    Location = s.Location ?? "",
+                    Start = ParseDate(s.Start),
+                    End = ParseDate(s.End),
+                    Details = s.Details ?? "",
+                    Reference = s.Reference ?? "",
+                })
+                .ToList(),
+        };
+    }
+    
+    private static string ExtractJson(string text)
+    {
+        var start = text.IndexOf('{');
+        var end = text.LastIndexOf('}');
+        if (start >= 0 && end > start)
+            return text[start..(end + 1)];
+
+        return text.Trim();
+    }
+
     private static string Truncate(string text, int maxLength)
     {
         if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
