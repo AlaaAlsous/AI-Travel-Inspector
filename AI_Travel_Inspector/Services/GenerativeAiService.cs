@@ -108,6 +108,35 @@ public class GenerativeAiService
         return plan;
     }
 
+    public async Task<string> ChatAsync(
+        TravelPlan plan,
+        string userMessage,
+        IReadOnlyList<ChatTurn> history)
+    {
+        var input = new List<ResponseItem>();
+
+        foreach (var turn in history)
+        {
+            if (string.IsNullOrWhiteSpace(turn.Content))
+                continue;
+
+            if (turn.Role == "user")
+                input.Add(ResponseItem.CreateUserMessageItem(turn.Content));
+            else if (turn.Role == "assistant")
+                input.Add(ResponseItem.CreateAssistantMessageItem(turn.Content, []));
+        }
+
+        input.Add(ResponseItem.CreateUserMessageItem(userMessage));
+
+        var options = new CreateResponseOptions(_deployment, input)
+        {
+            Instructions = BuildChatSystemPrompt(plan),
+        };
+
+        ResponseResult response = await _client.CreateResponseAsync(options);
+        return response.GetOutputText();
+    }
+
     private static string BuildPlanPrompt(IReadOnlyList<TravelDocument> documents)
     {
         var builder = new StringBuilder();
@@ -201,10 +230,12 @@ public class GenerativeAiService
         if (string.IsNullOrWhiteSpace(value))
             return null;
 
-        if (DateTime.TryParse(value, out var date))
-            return date;
-
-        return null;
+        return DateTime.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            out var date)
+            ? date
+            : null;
     }
 
     private static string ExtractJson(string text)
