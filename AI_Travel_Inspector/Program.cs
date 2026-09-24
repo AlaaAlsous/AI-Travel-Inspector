@@ -57,7 +57,7 @@ app.MapPost("/api/analyze", async (
     }
 }).DisableAntiforgery();
 
-app.MapPost("/api/plan", async (
+app.MapPost("/api/travel", async (
     PlanRequest request,
     GenerativeAiService generativeService,
     ITravelRepository repository) =>
