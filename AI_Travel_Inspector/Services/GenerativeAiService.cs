@@ -161,6 +161,67 @@ public class GenerativeAiService
         return builder.ToString();
     }
 
+    private static string BuildChatSystemPrompt(TravelPlan plan)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("You are a friendly, helpful travel assistant.");
+        builder.AppendLine("Answer questions about the user's trip, suggest activities,");
+        builder.AppendLine("and suggest improvements. Answer in the language the user writes in.");
+        builder.AppendLine("ONLY answer questions about this trip and travel in general. If the user asks about anything else,");
+        builder.AppendLine("politely decline and say that you can only help with questions about their trip and travel.");
+        builder.AppendLine("No markdown fences and no commentary .");
+        builder.AppendLine();
+        builder.AppendLine("--- TRIP ---");
+        builder.AppendLine($"Title: {plan.Title}");
+        builder.AppendLine($"Destination: {plan.Destination}");
+
+        if (plan.StartDate is not null || plan.EndDate is not null)
+        {
+            builder.AppendLine($"Dates: {FormatDate(plan.StartDate)} to {FormatDate(plan.EndDate)}");
+        }
+
+        if (plan.Travelers.Count > 0)
+        {
+            builder.AppendLine($"Travelers: {string.Join(", ", plan.Travelers)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(plan.Summary))
+        {
+            builder.AppendLine();
+            builder.AppendLine($"Summary: {plan.Summary}");
+        }
+
+        if (plan.Segments.Count > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("Itinerary:");
+            foreach (var segment in plan.Segments)
+            {
+                var parts = new List<string> { $"[{segment.Type}]", segment.Title };
+                if (segment.Start is not null)
+                    parts.Add(segment.Start.Value.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture));
+                if (!string.IsNullOrWhiteSpace(segment.Location))
+                    parts.Add(segment.Location);
+                builder.AppendLine("- " + string.Join(" ", parts));
+                if (!string.IsNullOrWhiteSpace(segment.Details))
+                    builder.AppendLine("    " + segment.Details);
+            }
+        }
+
+        var raw = string.Join(
+            "\n\n",
+            plan.Documents.Select(d => $"=== {d.FileName} ===\n{Truncate(d.Text, 6000)}"));
+
+        if (!string.IsNullOrWhiteSpace(raw))
+        {
+            builder.AppendLine();
+            builder.AppendLine("--- SOURCE DOCUMENTS (excerpt) ---");
+            builder.AppendLine(Truncate(raw, 15_000));
+        }
+
+        return builder.ToString();
+    }
+
     private static TravelPlan MapPlan(PlanDto dto)
     {
         return new TravelPlan
@@ -247,6 +308,9 @@ public class GenerativeAiService
 
         return text.Trim();
     }
+
+    private static string FormatDate(DateTime? date)
+        => date is null ? "?" : date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private static string Truncate(string text, int maxLength)
     {
