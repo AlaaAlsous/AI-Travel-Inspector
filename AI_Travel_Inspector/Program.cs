@@ -115,6 +115,25 @@ app.MapPost("/api/travel/{id}/chat", async (
     }
 }).DisableAntiforgery();
 
+app.MapGet("/api/travel", async (ITravelRepository repository) =>
+{
+    var plans = await repository.GetAllAsync();
+    return Results.Ok(plans);
+});
+
+app.MapGet("/api/travel/{id}", async (string id, ITravelRepository repository) =>
+{
+    var plan = await repository.GetAsync(id);
+    return plan is null
+        ? Results.NotFound(new { error = "Trip not found." })
+        : Results.Ok(plan);
+});
+
+app.MapDelete("/api/travel/{id}", async (string id, ITravelRepository repository) =>
+{
+    await repository.DeleteAsync(id);
+    return Results.NoContent();
+});
 
 app.Run();
 
