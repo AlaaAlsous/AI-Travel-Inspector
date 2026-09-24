@@ -1,5 +1,8 @@
 using System.ClientModel;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
+using AI_Travel_Inspector.Models;
 using OpenAI.Responses;
 
 #pragma warning disable OPENAI001
@@ -31,5 +34,26 @@ public class GenerativeAiService
         };
 
         _client = new ResponsesClient(new ApiKeyCredential(key), options);
+    }
+    private class PlanDto
+    {
+        public string? Title { get; set; }
+        public string? Destination { get; set; }
+        public string? StartDate { get; set; }
+        public string? EndDate { get; set; }
+        public List<string>? Travelers { get; set; }
+        public string? Summary { get; set; }
+        public List<SegmentDto>? Segments { get; set; }
+    }
+
+    private class SegmentDto
+    {
+        public string? Type { get; set; }
+        public string? Title { get; set; }
+        public string? Location { get; set; }
+        public string? Start { get; set; }
+        public string? End { get; set; }
+        public string? Details { get; set; }
+        public string? Reference { get; set; }
     }
 }
