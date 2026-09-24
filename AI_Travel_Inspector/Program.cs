@@ -115,6 +115,17 @@ app.MapPost("/api/travel/{id}/chat", async (
     }
 }).DisableAntiforgery();
 
+app.MapDelete("/api/travel/{id}/chat", async (string id, ITravelRepository repository) =>
+{
+    var plan = await repository.GetAsync(id);
+    if (plan is null)
+        return Results.NotFound(new { error = "Trip not found." });
+
+    plan.ChatHistory = new List<ChatTurn>();
+    await repository.UpdateAsync(plan);
+    return Results.NoContent();
+});
+
 app.MapGet("/api/travel", async (ITravelRepository repository) =>
 {
     var plans = await repository.GetAllAsync();
