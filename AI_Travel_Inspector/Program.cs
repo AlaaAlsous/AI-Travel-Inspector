@@ -56,3 +56,33 @@ app.MapPost("/api/analyze", async (
             statusCode: StatusCodes.Status500InternalServerError);
     }
 }).DisableAntiforgery();
+
+app.MapPost("/api/plan", async (
+    PlanRequest request,
+    GenerativeAiService generativeService,
+    ITravelRepository repository) =>
+{
+    if (request.Documents is null || request.Documents.Count == 0)
+        return Results.BadRequest(new { error = "No documents provided." });
+
+    try
+    {
+        var plan = await generativeService.BuildPlanAsync(request.Documents);
+        await repository.AddAsync(plan);
+        return Results.Ok(plan);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Could not build the trip plan",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+}).DisableAntiforgery();
+
+app.Run();
+
+public class PlanRequest
+{
+    public List<TravelDocument> Documents { get; set; } = new();
+}
