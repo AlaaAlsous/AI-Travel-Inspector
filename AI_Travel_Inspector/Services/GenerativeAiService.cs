@@ -19,6 +19,8 @@ public class GenerativeAiService
         PropertyNameCaseInsensitive = true,
     };
 
+    private static readonly BinaryData PlanSchemaData = BinaryData.FromString(PlanJsonSchema);
+
     private const string PlanSystemPrompt = """
     - You are a meticulous travel assistant. 
     - You extract structured travel data from travel documents and write a friendly summary.
@@ -74,6 +76,38 @@ public class GenerativeAiService
 
         _client = new ResponsesClient(new ApiKeyCredential(key), options);
     }
+
+    public async Task<TravelPlan> BuildPlanAsync(IReadOnlyList<TravelDocument> documents)
+    {
+        var input = new List<ResponseItem>
+        {
+            ResponseItem.CreateUserMessageItem(BuildPlanPrompt(documents)),
+        };
+
+        var options = new CreateResponseOptions(_deployment, input)
+        {
+            Instructions = PlanSystemPrompt,
+            TextOptions = new ResponseTextOptions
+            {
+                TextFormat = ResponseTextFormat.CreateJsonSchemaFormat(
+                    jsonSchemaFormatName: "travel_plan",
+                    jsonSchema: PlanSchemaData,
+                    jsonSchemaFormatDescription: "A structured travel plan extracted from booking documents",
+                    jsonSchemaIsStrict: true),
+            },
+        };
+
+        ResponseResult response = await _client.CreateResponseAsync(options);
+
+        var json = ExtractJson(response.GetOutputText());
+        var dto = JsonSerializer.Deserialize<PlanDto>(json, JsonOptions)
+            ?? throw new InvalidOperationException("Could not parse the AI's JSON response.");
+
+        var plan = MapPlan(dto);
+        plan.Documents = documents.ToList();
+        return plan;
+    }
+
     private class PlanDto
     {
         public string? Title { get; set; }
