@@ -19,6 +19,45 @@ public class GenerativeAiService
         PropertyNameCaseInsensitive = true,
     };
 
+    private const string PlanSystemPrompt = """
+    - You are a meticulous travel assistant. 
+    - You extract structured travel data from travel documents and write a friendly summary.
+    - Always respond in English.
+    """;
+
+    private const string PlanJsonSchema = """
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "description": "Short trip title" },
+        "destination": { "type": "string", "description": "Main destination, e.g. Istanbul, Turkey" },
+        "startDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) or empty string" },
+        "endDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) or empty string" },
+        "travelers": { "type": "array", "items": { "type": "string" } },
+        "summary": { "type": "string", "description": "A friendly 2-4 sentence summary of the whole trip in English" },
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string", "enum": ["Flight", "Hotel", "Activity", "Transport", "Other"] },
+              "title": { "type": "string" },
+              "location": { "type": "string" },
+              "start": { "type": "string", "description": "ISO date-time or empty string" },
+              "end": { "type": "string", "description": "ISO date-time or empty string" },
+              "details": { "type": "string" },
+              "reference": { "type": "string" }
+            },
+            "required": ["type", "title", "location", "start", "end", "details", "reference"]
+          }
+        }
+      },
+      "required": ["title", "destination", "startDate", "endDate", "travelers", "summary", "segments"]
+    }
+    """;
+
     public GenerativeAiService()
     {
         var endpoint = Environment.GetEnvironmentVariable("OPENAI_ENDPOINT")
