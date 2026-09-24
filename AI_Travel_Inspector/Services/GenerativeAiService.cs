@@ -156,7 +156,57 @@ public class GenerativeAiService
                 .ToList(),
         };
     }
-    
+
+    private static string NormalizeType(string? type)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+            return "Other";
+
+        var value = type.Trim().ToLowerInvariant();
+
+        if (ContainsAny(value,
+                "transport", "transfer", "taxi", "cab", "shuttle", "bus", "coach", "train",
+                "rail", "metro", "subway", "tram", "ferry", "boat", "cruise", "ride",
+                "driver", "chauffeur", "pickup", "pick-up", "limo", "van", "car", "rental",
+                "uber", "lyft", "vehicle", "drive"))
+            return "Transport";
+
+        if (ContainsAny(value,
+                "flight", "fly", "airline", "airport", "plane", "aircraft", "aviation",
+                "airfare", "air travel", "boarding", "gate", "layover", "stopover", "carrier"))
+            return "Flight";
+
+        if (ContainsAny(value,
+                "hotel", "hostel", "motel", "resort", "lodge", "lodging", "accommodation",
+                "guesthouse", "guest house", "room", "suite", "check-in", "checkin",
+                "check-out", "checkout", "stay", "night", "airbnb", "b&b",
+                "bed and breakfast", "apartment", "villa", "property"))
+            return "Hotel";
+
+        if (ContainsAny(value,
+                "activity", "activities", "tour", "excursion", "ticket", "event",
+                "attraction", "museum", "sightseeing", "experience", "show", "concert",
+                "festival", "adventure", "admission", "entry", "guided", "spa", "workshop",
+                "class"))
+            return "Activity";
+
+        return "Other";
+    }
+
+    private static bool ContainsAny(string value, params string[] keywords)
+        => keywords.Any(keyword => value.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static DateTime? ParseDate(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        if (DateTime.TryParse(value, out var date))
+            return date;
+
+        return null;
+    }
+
     private static string ExtractJson(string text)
     {
         var start = text.IndexOf('{');
