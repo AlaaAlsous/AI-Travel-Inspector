@@ -115,6 +115,39 @@ app.MapPost("/api/travel/{id}/chat", async (
     }
 }).DisableAntiforgery();
 
+app.MapPut("/api/travel/{id}", async (
+    string id,
+    PlanRequest request,
+    GenerativeAiService generativeService,
+    ITravelRepository repository) =>
+{
+    if (request.Documents is null || request.Documents.Count == 0)
+        return Results.BadRequest(new { error = "No documents provided." });
+
+    var existing = await repository.GetAsync(id);
+    if (existing is null)
+        return Results.NotFound(new { error = "Trip not found." });
+
+    try
+    {
+        var plan = await generativeService.BuildPlanAsync(request.Documents);
+
+        plan.Id = existing.Id;
+        plan.CreatedAt = existing.CreatedAt;
+        plan.ChatHistory = existing.ChatHistory;
+
+        await repository.UpdateAsync(plan);
+        return Results.Ok(plan);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Could not rebuild the trip plan",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+}).DisableAntiforgery();
+
 app.MapDelete("/api/travel/{id}/chat", async (string id, ITravelRepository repository) =>
 {
     var plan = await repository.GetAsync(id);
