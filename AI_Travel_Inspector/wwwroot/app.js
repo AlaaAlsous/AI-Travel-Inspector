@@ -326,6 +326,60 @@ function renderEditDocuments() {
   });
 }
 
+async function addEditFiles() {
+  const input = document.getElementById("editFileInput");
+  const dropzoneText = document.getElementById("editDropzoneText");
+  const status = document.getElementById("editStatus");
+  const btn = document.getElementById("editAddBtn");
+
+  if (!input.files.length) {
+    status.classList.add("error");
+    status.textContent = "Select a file first.";
+    return;
+  }
+
+  const files = [...input.files];
+  btn.disabled = true;
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    status.classList.remove("error");
+    status.textContent = `⏳ Extracting "${file.name}"...`;
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Unexpected server response.");
+      }
+      if (!response.ok)
+        throw new Error(data.error || data.detail || "Extraction failed.");
+      editDocuments.push(data);
+    } catch (err) {
+      status.classList.add("error");
+      status.textContent = "❌ " + err.message;
+      btn.disabled = false;
+      input.value = "";
+      dropzoneText.textContent = "Add more files…";
+      return;
+    }
+  }
+
+  renderEditDocuments();
+  status.classList.remove("error");
+  status.textContent = `✅ Added ${files.length} file(s).`;
+  btn.disabled = false;
+  input.value = "";
+  dropzoneText.textContent = "Add more files…";
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
