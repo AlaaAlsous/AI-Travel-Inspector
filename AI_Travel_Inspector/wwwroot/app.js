@@ -563,6 +563,101 @@ async function loadTrips() {
     });
 }
 
+function togglePanel(btn) {
+  const panel = btn.closest(".panel");
+  const collapsed = panel.classList.toggle("collapsed");
+  btn.setAttribute("aria-expanded", String(!collapsed));
+}
+
+async function clearChat() {
+  if (!currentPlan) return;
+
+  const confirmed = await showConfirmModal(
+    "Clear the chat?",
+    "This removes the whole chat history for this trip. This cannot be undone.",
+    "Clear",
+  );
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`/api/travel/${currentPlan.id}/chat`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Could not clear the chat.");
+  } catch (err) {
+    setStatus("❌ " + err.message, true);
+    return;
+  }
+
+  currentPlan.chatHistory = [];
+  document.getElementById("chatMessages").innerHTML = "";
+}
+
+async function deleteTrip(id, title) {
+  const confirmed = await showConfirmModal(
+    "Delete this trip?",
+    `Are you sure you want to delete "${title || "this trip"}"? This cannot be undone.`,
+    "Delete",
+  );
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`/api/travel/${id}`, { method: "DELETE" });
+    if (!response.ok) throw new Error("Could not delete the trip.");
+  } catch (err) {
+    setStatus("❌ " + err.message, true);
+    return;
+  }
+
+  document.getElementById("planCard").hidden = true;
+  document.getElementById("editCard").hidden = true;
+  document.getElementById("chatCard").hidden = true;
+  currentPlan = null;
+  loadTrips();
+}
+
+function showConfirmModal(title, message, confirmLabel) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("modalOverlay");
+    const titleEl = document.getElementById("modalTitle");
+    const messageEl = document.getElementById("modalMessage");
+    const cancelBtn = document.getElementById("modalCancel");
+    const confirmBtn = document.getElementById("modalConfirm");
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    confirmBtn.textContent = confirmLabel;
+
+    overlay.hidden = false;
+    requestAnimationFrame(() => overlay.classList.add("open"));
+    confirmBtn.focus();
+
+    const onKey = (event) => {
+      if (event.key === "Escape") close(false);
+      else if (event.key === "Enter") close(true);
+    };
+
+    const close = (result) => {
+      overlay.classList.remove("open");
+      setTimeout(() => {
+        overlay.hidden = true;
+      }, 180);
+      cancelBtn.onclick = null;
+      confirmBtn.onclick = null;
+      overlay.onclick = null;
+      document.removeEventListener("keydown", onKey);
+      resolve(result);
+    };
+
+    cancelBtn.onclick = () => close(false);
+    confirmBtn.onclick = () => close(true);
+    overlay.onclick = (event) => {
+      if (event.target === overlay) close(false);
+    };
+    document.addEventListener("keydown", onKey);
+  });
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
