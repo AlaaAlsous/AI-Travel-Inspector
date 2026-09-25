@@ -85,10 +85,49 @@ async function analyze() {
   dropzoneText.textContent = "Choose files or drag them here";
 }
 
+function renderDocuments() {
+  const card = document.getElementById("documentsCard");
+  const list = document.getElementById("documentList");
+  const btn = document.getElementById("planBtn");
+
+  card.hidden = documents.length === 0;
+  list.innerHTML = "";
+
+  documents.forEach((doc, i) => {
+    const li = document.createElement("li");
+    li.className = "document-item";
+
+    const info = document.createElement("div");
+    info.className = "document-info";
+
+    const name = document.createElement("span");
+    name.className = "document-name";
+    name.textContent = `📄 ${doc.fileName}`;
+
+    const meta = document.createElement("span");
+    meta.className = "document-meta";
+    meta.textContent = `${doc.pageCount} page(s) · ${doc.text.length} chars`;
+
+    info.append(name, meta);
+
+    const remove = document.createElement("button");
+    remove.className = "trip-delete";
+    remove.innerHTML = TRASH_ICON;
+    remove.title = "Remove Document";
+    remove.addEventListener("click", () => {
+      documents.splice(i, 1);
+      renderDocuments();
+    });
+
+    li.append(info, remove);
+    list.appendChild(li);
+  });
+
+  btn.disabled = documents.length === 0;
+}
 
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
   status.classList.toggle("error", !!isError);
 }
-
