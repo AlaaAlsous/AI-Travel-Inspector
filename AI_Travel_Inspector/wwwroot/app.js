@@ -259,6 +259,73 @@ function renderSegment(seg) {
   container.appendChild(item);
 }
 
+let editDocuments = [];
+
+function startEdit() {
+  if (!currentPlan) return;
+
+  editDocuments = [...(currentPlan.documents || [])];
+  renderEditDocuments();
+
+  document.getElementById("editStatus").textContent = "";
+  document.getElementById("editDropzoneText").textContent = "Add more files…";
+
+  document.getElementById("planCard").hidden = true;
+  document.getElementById("editCard").hidden = false;
+  document.getElementById("editCard").scrollIntoView({ behavior: "smooth" });
+}
+
+function cancelEdit() {
+  document.getElementById("editCard").hidden = true;
+
+  if (currentPlan) {
+    renderPlan(currentPlan);
+  }
+}
+
+function renderEditDocuments() {
+  const list = document.getElementById("editDocumentList");
+  list.innerHTML = "";
+
+  if (!editDocuments.length) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "No files. Add at least one booking.";
+    list.appendChild(li);
+    return;
+  }
+
+  editDocuments.forEach((doc, i) => {
+    const li = document.createElement("li");
+    li.className = "document-item";
+
+    const info = document.createElement("div");
+    info.className = "document-info";
+
+    const name = document.createElement("span");
+    name.className = "document-name";
+    name.textContent = `📄 ${doc.fileName}`;
+
+    const meta = document.createElement("span");
+    meta.className = "document-meta";
+    meta.textContent = `${doc.pageCount} page(s) · ${doc.text.length} chars`;
+
+    info.append(name, meta);
+
+    const remove = document.createElement("button");
+    remove.className = "trip-delete";
+    remove.innerHTML = TRASH_ICON;
+    remove.title = "Remove file";
+    remove.addEventListener("click", () => {
+      editDocuments.splice(i, 1);
+      renderEditDocuments();
+    });
+
+    li.append(info, remove);
+    list.appendChild(li);
+  });
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
