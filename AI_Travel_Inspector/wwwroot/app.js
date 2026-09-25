@@ -126,6 +126,45 @@ function renderDocuments() {
   btn.disabled = documents.length === 0;
 }
 
+async function buildPlan() {
+  const btn = document.getElementById("planBtn");
+
+  btn.disabled = true;
+  setStatus("✨ Asking Azure OpenAI to summarize your trip...", false);
+
+  try {
+    const response = await fetch("/api/travel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documents }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Unexpected server response.");
+    }
+    if (!response.ok)
+      throw new Error(
+        data.error || data.detail || "Could not build the trip plan.",
+      );
+
+    currentPlan = data;
+    renderPlan(data);
+    documents.length = 0;
+    renderDocuments();
+    setStatus("✅ Your trip is ready!", false);
+    loadTrips();
+    document.getElementById("planCard").scrollIntoView({ behavior: "smooth" });
+  } catch (err) {
+    setStatus("❌ " + err.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
