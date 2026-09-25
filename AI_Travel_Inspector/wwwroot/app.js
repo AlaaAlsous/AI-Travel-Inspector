@@ -259,6 +259,11 @@ function renderSegment(seg) {
   container.appendChild(item);
 }
 
+const chatForm = document.getElementById("chatForm");
+chatForm.addEventListener("submit", sendChat);
+
+document.getElementById("clearChatBtn").addEventListener("click", clearChat);
+
 let editDocuments = [];
 
 function startEdit() {
