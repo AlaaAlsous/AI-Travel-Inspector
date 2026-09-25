@@ -499,6 +499,70 @@ function appendChat(role, content) {
   container.scrollTop = container.scrollHeight;
 }
 
+async function loadTrips() {
+  const list = document.getElementById("travelList");
+  const response = await fetch("/api/travel");
+  const trips = await response.json();
+
+  list.innerHTML = "";
+
+  if (!trips.length) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "No trips saved yet.";
+    list.appendChild(li);
+    return;
+  }
+
+  trips
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .forEach((trip) => {
+      const li = document.createElement("li");
+      li.className = "trip-item";
+
+      const emoji = document.createElement("span");
+      emoji.className = "trip-emoji";
+      emoji.textContent = "✈️";
+
+      const wrap = document.createElement("div");
+      wrap.className = "trip-title-wrap";
+
+      const title = document.createElement("div");
+      title.className = "trip-title";
+      title.textContent = trip.title || "Trip";
+
+      const meta = document.createElement("div");
+      meta.className = "trip-facts";
+      meta.textContent = trip.destination || "";
+
+      wrap.append(title, meta);
+
+      const del = document.createElement("button");
+      del.className = "trip-delete";
+      del.innerHTML = TRASH_ICON;
+      del.title = "Delete trip";
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        deleteTrip(trip.id, trip.title);
+      });
+
+      li.append(emoji, wrap, del);
+
+      li.addEventListener("click", async () => {
+        const res = await fetch(`/api/travel/${trip.id}`);
+        if (!res.ok) return;
+        const plan = await res.json();
+        currentPlan = plan;
+        renderPlan(plan);
+        document
+          .getElementById("planCard")
+          .scrollIntoView({ behavior: "smooth" });
+      });
+
+      list.appendChild(li);
+    });
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
