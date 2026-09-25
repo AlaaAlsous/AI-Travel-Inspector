@@ -37,3 +37,58 @@ dropzone.addEventListener("drop", (e) => {
         : `${e.dataTransfer.files.length} files selected`;
   }
 });
+
+async function analyze() {
+  const btn = document.getElementById("analyzeBtn");
+
+  if (!fileInput.files.length) {
+    setStatus("Select a file first.", true);
+    return;
+  }
+
+  const files = [...fileInput.files];
+  btn.disabled = true;
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setStatus(`⏳ Extracting "${file.name}"...`, false);
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Unexpected server response.");
+      }
+      if (!response.ok)
+        throw new Error(data.error || data.detail || "Extraction failed.");
+      documents.push(data);
+    } catch (err) {
+      setStatus("❌ " + err.message, true);
+      btn.disabled = false;
+      fileInput.value = "";
+      dropzoneText.textContent = "Choose files or drag them here";
+      return;
+    }
+  }
+
+  renderDocuments();
+  setStatus(`✅ Extracted ${documents.length} document(s).`, false);
+  btn.disabled = false;
+  fileInput.value = "";
+  dropzoneText.textContent = "Choose files or drag them here";
+}
+
+
+function setStatus(msg, isError) {
+  const status = document.getElementById("status");
+  status.textContent = msg;
+  status.classList.toggle("error", !!isError);
+}
+
