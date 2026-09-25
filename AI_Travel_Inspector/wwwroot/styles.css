@@ -515,3 +515,143 @@ h2 {
 #chatInput::placeholder {
   color: var(--faint);
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+}
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  text-align: center;
+}
+
+.modal-icon {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 0.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--danger-soft);
+  border: 1px solid rgba(229, 72, 77, 0.35);
+  color: #ff8a8f;
+}
+
+.modal-icon .icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.modal h2 {
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.modal p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-bottom: 1.15rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.collapse-btn:hover {
+  background: var(--panel-2);
+  color: var(--soft);
+  border-color: var(--border-strong);
+}
+
+.collapse-btn .chevron {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.panel.collapsed .panel-body {
+  display: none;
+}
+
+.panel.collapsed .panel-head {
+  margin-bottom: 0;
+}
+
+.panel.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+.btn-danger .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.hint-block {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin-bottom: 0.9rem;
+}
+
+.dropzone-sm {
+  padding: 1.1rem 1rem;
+  margin-top: 0.75rem;
+}
+
+#planCard:not([hidden]) ~ .placeholder,
+#editCard:not([hidden]) ~ .placeholder {
+  display: none;
+}
