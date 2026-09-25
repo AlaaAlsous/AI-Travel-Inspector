@@ -730,3 +730,120 @@ h2 {
 :root:not([data-theme="light"]) .icon.sun {
   display: none;
 }
+
+@media (max-width: 760px) {
+  body {
+    padding: 1rem 0.8rem 2.5rem;
+  }
+
+  .topbar {
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  .lead {
+    font-size: 0.85rem;
+  }
+
+  .layout {
+    gap: 0.9rem;
+  }
+
+  .col-left {
+    gap: 0.9rem;
+  }
+
+  .panel {
+    padding: 0.95rem;
+    border-radius: 10px;
+  }
+
+  .panel-head {
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .panel-head h2 {
+    font-size: 0.9rem;
+  }
+
+  .head-actions {
+    gap: 0.35rem;
+  }
+
+  .btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .btn-sm {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .collapse-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  #planTitle {
+    font-size: 1.05rem;
+  }
+
+  .dropzone {
+    padding: 1.5rem 0.9rem;
+  }
+
+  .dropzone-sm {
+    padding: 0.9rem;
+  }
+
+  .chat {
+    max-height: 46vh;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+}
+
+@media (max-width: 430px) {
+  .head-actions .btn-label {
+    display: none;
+  }
+
+  .btn-block {
+    font-size: 0.9rem;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f4f6fa;
+    --panel: #ffffff;
+    --panel-2: #eff3f9;
+    --well: #f7f9fc;
+    --border: #e3e8f0;
+    --border-strong: #cbd4e1;
+    --text: #101827;
+    --soft: #3d4757;
+    --muted: #6b7683;
+    --faint: #98a2b3;
+    --accent: #2f7cf6;
+    --accent-hover: #1f6ae6;
+    --accent-soft: rgba(47, 124, 246, 0.1);
+    --danger-soft: rgba(229, 72, 77, 0.1);
+    --danger-text: #d0292e;
+    --warn: #a16207;
+  }
+}
+
