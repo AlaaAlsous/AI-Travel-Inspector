@@ -847,3 +847,81 @@ h2 {
   }
 }
 
+
+svg.icon {
+  display: block;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trip-delete {
+  color: var(--soft);
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.trip-delete .icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.trip-delete:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger-text);
+}
+
+.btn-danger {
+  color: #fff;
+}
+
+.btn-danger .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn {
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+}
+
+.btn:hover {
+  background: var(--border);
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+.btn-ghost,
+.btn-ghost:hover {
+  color: var(--soft);
+  background: transparent;
+  border-color: var(--border);
+}
+
+.trip-delete {
+  color: var(--soft);
+}
