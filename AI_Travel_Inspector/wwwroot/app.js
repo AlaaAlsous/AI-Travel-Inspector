@@ -208,6 +208,57 @@ function renderPlan(plan) {
   (plan.chatHistory || []).forEach((m) => appendChat(m.role, m.content));
 }
 
+const SEGMENT_EMOJI = {
+  Flight: "✈️",
+  Hotel: "🏨",
+  Activity: "🎫",
+  Transport: "🚆",
+  Other: "📍",
+};
+
+function renderSegment(seg) {
+  const container = document.getElementById("segmentsList");
+
+  const item = document.createElement("div");
+  item.className = "segment";
+
+  const head = document.createElement("div");
+  head.className = "segment-head";
+
+  const emoji = document.createElement("span");
+  emoji.className = "segment-emoji";
+  emoji.textContent = SEGMENT_EMOJI[seg.type] || "📍";
+
+  const title = document.createElement("span");
+  title.className = "segment-title";
+  title.textContent = seg.title || seg.type || "Item";
+
+  head.append(emoji, title);
+  item.appendChild(head);
+
+  const metaParts = [];
+  if (seg.start) metaParts.push(formatDateTime(seg.start));
+  if (seg.end) metaParts.push("→ " + formatDateTime(seg.end));
+  if (seg.location) metaParts.push("📍 " + seg.location);
+  if (seg.reference) metaParts.push("🔖 " + seg.reference);
+
+  if (metaParts.length) {
+    const meta = document.createElement("div");
+    meta.className = "segment-meta";
+    meta.textContent = metaParts.join("   ·   ");
+    item.appendChild(meta);
+  }
+
+  if (seg.details) {
+    const details = document.createElement("div");
+    details.className = "segment-details";
+    details.textContent = seg.details;
+    item.appendChild(details);
+  }
+
+  container.appendChild(item);
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
