@@ -380,6 +380,68 @@ async function addEditFiles() {
   dropzoneText.textContent = "Add more files…";
 }
 
+async function saveEdit() {
+  if (!currentPlan) return;
+
+  const status = document.getElementById("editStatus");
+  const btn = document.getElementById("editSaveBtn");
+
+  if (!editDocuments.length) {
+    status.classList.add("error");
+    status.textContent = "Add at least one file.";
+    return;
+  }
+
+  btn.disabled = true;
+  status.classList.remove("error");
+  status.textContent = "✨ Rebuilding the plan with the AI...";
+
+  try {
+    const response = await fetch(`/api/travel/${currentPlan.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documents: editDocuments }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Unexpected server response.");
+    }
+    if (!response.ok)
+      throw new Error(
+        data.error || data.detail || "Could not rebuild the plan.",
+      );
+
+    currentPlan = data;
+    document.getElementById("editCard").hidden = true;
+    renderPlan(data);
+    loadTrips();
+  } catch (err) {
+    status.classList.add("error");
+    status.textContent = "❌ " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+const editFileInput = document.getElementById("editFileInput");
+editFileInput.addEventListener("change", () => {
+  const text = document.getElementById("editDropzoneText");
+  text.textContent =
+    editFileInput.files.length === 0
+      ? "Add more files…"
+      : editFileInput.files.length === 1
+        ? editFileInput.files[0].name
+        : `${editFileInput.files.length} files selected`;
+});
+
+document.getElementById("editPlanBtn").addEventListener("click", startEdit);
+document.getElementById("editCancelBtn").addEventListener("click", cancelEdit);
+document.getElementById("editAddBtn").addEventListener("click", addEditFiles);
+document.getElementById("editSaveBtn").addEventListener("click", saveEdit);
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
