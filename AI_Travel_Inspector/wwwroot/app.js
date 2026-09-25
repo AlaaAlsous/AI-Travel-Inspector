@@ -164,9 +164,81 @@ async function buildPlan() {
   }
 }
 
+function renderPlan(plan) {
+  const card = document.getElementById("planCard");
+  card.hidden = false;
+
+  document.getElementById("planTitle").textContent =
+    `${plan.title || "Your trip"}`;
+
+  const metaParts = [];
+  if (plan.destination) metaParts.push(`📍 ${plan.destination}`);
+  if (plan.startDate || plan.endDate) {
+    metaParts.push(
+      `📅 ${formatDate(plan.startDate)} → ${formatDate(plan.endDate)}`,
+    );
+  }
+  document.getElementById("planMeta").textContent = metaParts.join("   ·   ");
+
+  const travelers = document.getElementById("travelersList");
+  travelers.innerHTML = "";
+  (plan.travelers || []).forEach((t) => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = `👤 ${t}`;
+    travelers.appendChild(chip);
+  });
+  travelers.hidden = !(plan.travelers && plan.travelers.length);
+
+  document.getElementById("planSummary").textContent = plan.summary || "";
+
+  const segments = document.getElementById("segmentsList");
+  segments.innerHTML = "";
+  (plan.segments || []).forEach(renderSegment);
+
+  document.getElementById("deletePlanBtn").onclick = () =>
+    deleteTrip(plan.id, plan.title);
+
+  document.getElementById("editCard").hidden = true;
+
+  const chatCard = document.getElementById("chatCard");
+  chatCard.hidden = false;
+  const chatMessages = document.getElementById("chatMessages");
+  chatMessages.innerHTML = "";
+  (plan.chatHistory || []).forEach((m) => appendChat(m.role, m.content));
+}
 
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
   status.classList.toggle("error", !!isError);
 }
+
+function formatDate(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  return isNaN(d.getTime())
+    ? value
+    : d.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+}
+
+function formatDateTime(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  return isNaN(d.getTime())
+    ? value
+    : d.toLocaleString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+}
+
+loadTrips();
