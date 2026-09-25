@@ -442,6 +442,63 @@ document.getElementById("editCancelBtn").addEventListener("click", cancelEdit);
 document.getElementById("editAddBtn").addEventListener("click", addEditFiles);
 document.getElementById("editSaveBtn").addEventListener("click", saveEdit);
 
+async function sendChat(e) {
+  e.preventDefault();
+  if (!currentPlan) return;
+
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  appendChat("user", message);
+  input.value = "";
+  input.disabled = true;
+  sendBtn.disabled = true;
+
+  try {
+    const response = await fetch(`/api/travel/${currentPlan.id}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("Unexpected response.");
+    }
+    if (!response.ok)
+      throw new Error(data.error || data.detail || "Chat failed.");
+
+    appendChat("assistant", data.answer);
+    currentPlan.chatHistory = data.history;
+  } catch (err) {
+    appendChat("assistant", "❌ " + err.message);
+  } finally {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function appendChat(role, content) {
+  const container = document.getElementById("chatMessages");
+
+  const msg = document.createElement("div");
+  msg.className = `chat-msg ${role === "user" ? "user" : "assistant"}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = "chat-bubble";
+  bubble.textContent = content;
+
+  msg.appendChild(bubble);
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
 function setStatus(msg, isError) {
   const status = document.getElementById("status");
   status.textContent = msg;
