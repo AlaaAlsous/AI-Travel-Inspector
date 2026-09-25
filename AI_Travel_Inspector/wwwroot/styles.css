@@ -222,3 +222,148 @@ h2 {
   width: 100%;
   margin-top: 0.85rem;
 }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2rem 1rem;
+  background: var(--well);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dropzone input[type="file"] {
+  display: none;
+}
+
+.dropzone-icon {
+  font-size: 1.9rem;
+}
+
+.dropzone-text {
+  font-size: 0.92rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.hint {
+  color: var(--faint);
+  font-size: 0.75rem;
+}
+
+.status {
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  color: var(--warn);
+  text-align: center;
+}
+
+.status:empty {
+  display: none;
+}
+
+.status.error {
+  color: #ff8a8f;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.document-item,
+.trip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--well);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.6rem 0.75rem;
+}
+
+.trip-item {
+  cursor: pointer;
+}
+
+.trip-item:hover {
+  border-color: var(--accent);
+}
+
+.document-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.document-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.document-meta,
+.trip-facts {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.trip-emoji {
+  font-size: 1.4rem;
+}
+
+.trip-title-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trip-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.trip-delete {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 0.3rem 0.45rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.trip-delete:hover {
+  background: var(--danger-soft);
+  color: #ff8a8f;
+}
+
+.empty {
+  color: var(--faint);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.75rem;
+}
