@@ -1,5 +1,6 @@
 const documents = [];
 let currentPlan = null;
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 const TRASH_ICON = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>`;
 
@@ -47,6 +48,11 @@ async function analyze() {
   }
 
   const files = [...fileInput.files];
+  if (files.some((file) => file.size > MAX_FILE_SIZE_BYTES)) {
+    setStatus("Files must be 20 MB or smaller.", true);
+    return;
+  }
+
   btn.disabled = true;
 
   for (const file of files) {
@@ -344,6 +350,12 @@ async function addEditFiles() {
   }
 
   const files = [...input.files];
+  if (files.some((file) => file.size > MAX_FILE_SIZE_BYTES)) {
+    status.classList.add("error");
+    status.textContent = "Files must be 20 MB or smaller.";
+    return;
+  }
+
   btn.disabled = true;
 
   for (const file of files) {
@@ -506,8 +518,19 @@ function appendChat(role, content) {
 
 async function loadTrips() {
   const list = document.getElementById("travelList");
-  const response = await fetch("/api/travel");
-  const trips = await response.json();
+  let trips;
+  try {
+    const response = await fetch("/api/travel");
+    if (!response.ok) throw new Error("Could not load saved trips.");
+    trips = await response.json();
+  } catch (err) {
+    list.innerHTML = "";
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = err.message || "Could not load saved trips.";
+    list.appendChild(li);
+    return;
+  }
 
   list.innerHTML = "";
 
@@ -671,7 +694,14 @@ function setStatus(msg, isError) {
 
 function formatDate(value) {
   if (!value) return "—";
-  const d = new Date(value);
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const d = dateOnly
+    ? new Date(
+        Number(dateOnly[1]),
+        Number(dateOnly[2]) - 1,
+        Number(dateOnly[3]),
+      )
+    : new Date(value);
   return isNaN(d.getTime())
     ? value
     : d.toLocaleDateString("en-GB", {
