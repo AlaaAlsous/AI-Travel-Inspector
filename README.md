@@ -1,110 +1,148 @@
-# .NET25 laboration: Generativ AI
-
 # AI Travel Inspector
 
-Det är en webbapp som läser resedokument (flygbiljetter, hotellbokningar, taxi, aktiviteter)
-med hjälp av Azure Document Intelligence. Användaren laddar upp en eller flera
-filer (PDF, Bild), och appen bygger en komplett resplan med Azure OpenAI och visar
-den. Sen kan man chatta med en AI-agent om resan.
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)
+![Azure Document Intelligence](https://img.shields.io/badge/Azure-Document%20Intelligence-0078D4)
+![Azure OpenAI](https://img.shields.io/badge/Azure-OpenAI-0078D4)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E)
 
----
+AI Travel Inspector hjälper dig att samla resebokningar på ett ställe. Ladda upp
+flyg, hotell och aktivitetsdokument så läser Azure AI av innehållet och Azure
+OpenAI skapar en strukturerad resplan. Du kan sedan ställa frågor om resan i en
+inbyggd chatt.
 
-## Så startar man projektet
+## Funktioner
 
-### 1. Det man behöver
+- Läser PDF-, PNG-, JPG-, JPEG-, TIFF- och BMP-filer med OCR.
+- Skapar en resplan med resenärer, datum, sammanfattning och bokningsdelar.
+- Visar resan som en kronologisk tidslinje.
+- Sparar, öppnar, redigerar och tar bort resor.
+- Låter dig chatta om resan och rensa chatthistoriken.
+- Fungerar på mobil och följer systemets ljusa eller mörka tema.
 
-- .NET 10 SDK
-- Ett Azure-konto med två tjänster:
-  - Azure AI Document Intelligence (för att läsa dokumenten)
-  - Azure OpenAI (med en deployad chatmodell, t.ex. `gpt-5.4-mini`)
+Varje uppladdad fil får vara högst **20 MB**. Filer där OCR inte hittar läsbar
+text kan inte användas.
 
-### 2. Lägga till API-nycklarna
+## Förutsättningar
 
-Nycklarna får inte hamna i Git. Därför läser appen dem från en `.env`-fil
-som är git-ignorerad.
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- En Azure AI Document Intelligence-resurs
+- En Azure OpenAI-resurs med en deployad chattmodell
 
-1. Gå in i mappen `AI_Travel_Inspector`.
-2. Kopiera mallen:
+Du behöver resursens endpoint och nyckel samt namnet på modellens deployment.
 
-   ```powershell
-   copy .env.example .env
-   ```
+## Kom igång
 
-3. Öppna den nya filen `.env` och klistra in dina riktiga nycklar.
-
-4. Låt `.env` vara kvar lokalt. Den är redan i `.gitignore`, så den pushas
-   aldrig till Git.
-
-### 3. Köra
+Öppna PowerShell i projektets rotmapp och gå till appmappen:
 
 ```powershell
 cd AI_Travel_Inspector
+Copy-Item .env.example .env
+```
+
+Öppna `AI_Travel_Inspector\.env` och fyll i värdena för dina Azure-resurser:
+
+```dotenv
+DOCUMENT_ENDPOINT=https://<din-document-intelligence-resurs>.cognitiveservices.azure.com/
+DOCUMENT_KEY=<din-document-intelligence-nyckel>
+
+OPENAI_ENDPOINT=https://<din-openai-resurs>.openai.azure.com/
+OPENAI_KEY=<din-openai-nyckel>
+OPENAI_DEPLOYMENT=<namnet-på-din-modell-deployment>
+```
+
+Starta appen från `AI_Travel_Inspector`:
+
+```powershell
 dotnet run
 ```
 
-Öppna sen **http://localhost:5136** i webbläsaren.
+Öppna sedan **http://localhost:5136** i webbläsaren.
 
----
+> `.env` är git-ignorerad. Lägg aldrig riktiga nycklar i källkod eller i Git.
 
-## Så fungerar programmet
+## Använd appen
 
-1. Användaren laddar upp en eller flera filer (PDF · PNG · JPG · JPEG · TIFF · BMP), drar in dem eller klickar.
-   Filerna hamnar i en lista till vänster.
-2. Document Intelligence läser texten ur varje dokument (OCR).
-3. Användaren trycker **"Extract Travel Information"**. Då skickas all text till Azure OpenAI.
-4. AI:n bygger en strukturerad resplan och svarar i ett bestämt JSON-format:
-   titel, destination, start- och slutdatum, resenärer, en kort sammanfattning och
-   en lista med delar (Flight, Hotel, Activity, Transport) med datum, plats,
-   detaljer och bokningsreferens.
-5. Min C#-kod läser JSON-svaret och gör om det till mina egna klasser `TravelPlan`,
-   `TripSegment`, `TravelDocument` och `ChatTurn`.
-6. Resan sparas i `Data/travel.json` och visas till höger: tidslinje, resenärer
-   och sammanfattning.
-7. Under planen finns en chatt. Där kan man fråga AI-agenten om resan, t.ex. be om
-   aktivitetstips eller förbättringar. Agenten svarar bara på sådant som handlar om
-   resan, annars säger den ifrån.
-8. Man kan **redigera** en sparad resa: lägga till nya bokningar (om man bokat
-   något nytt) eller ta bort filer, och sen trycka **Save & Update Trip**, då byggs
-   planen om av AI:n.
-9. Man kan **ta bort** en resa och **rensa** chatten. Båda frågar först i en egen
-   bekräftelseruta.
+1. Välj eller dra in en eller flera bokningsfiler.
+2. Tryck **Extract Travel Information** för att läsa dokumenten.
+3. Granska dokumentlistan och välj **Generate Travel Summary**.
+4. Öppna den skapade resan under **Saved Trips**. Där kan du redigera resans
+   dokument, ta bort resan eller fråga chatten om resan.
 
-Sidan är en enkel statisk HTML/CSS/JS-sida. Den fungerar på mobil, och temat följer datorns mörka/ljusa inställning automatiskt.
+Modellen skapar bland annat segment av typen Flight, Hotel, Activity och
+Transport. Kontrollera alltid datum, tider, resenärsnamn och bokningsreferenser
+mot originaldokumenten innan du förlitar dig på resplanen.
 
----
+## Så fungerar det
 
-## Vilka AI-tjänster jag använder och varför
+1. `DocumentAnalysisService` skickar filen till Azure AI Document Intelligence
+   och hämtar den extraherade texten.
+2. `GenerativeAiService` skickar dokumenttexten till Azure OpenAI via Responses
+   API och använder Structured Outputs för att få ett svar i resplanens JSON-
+   format.
+3. Backend-koden mappar svaret till modellerna `TravelPlan`, `TripSegment`,
+   `TravelDocument` och `ChatTurn`.
+4. `JsonTravelRepository` sparar resorna lokalt i
+   `AI_Travel_Inspector\Data\travel.json`.
+5. Den statiska frontendkoden i `wwwroot` visar resan och kommunicerar med
+   backendens API.
 
-### 1. Azure Document Intelligence(OCR) - läser dokumenten
+Structured Outputs hjälper modellen att följa rätt format, men garanterar inte
+att uppgifterna är korrekta. Långa dokumenttexter kan dessutom kortas innan de
+skickas till modellen.
 
-Den gör OCR på PDF filer och bilder och ger tillbaka texten.
+## Konfiguration och utveckling
 
-**Varför:** resedokument är oftast PDF filer eller skärmklipp. Jag måste få ut
-texten innan jag kan göra något annat med den. Document Intelligence klarar
-både PDF och bilder, och jag kan skicka in flera filer.
+Viktiga filer och mappar:
 
-### 2. Azure OpenAI - bygger planen och chattar (Generativ AI)
+```text
+AI_Travel_Inspector/
+├── Models/        Resemodeller
+├── Repositories/  JSON-baserad lagring
+├── Services/      OCR- och AI-integration
+├── wwwroot/       HTML, CSS och JavaScript
+├── Data/          Lokalt sparade resor
+├── .env.example   Mall för lokal Azure-konfiguration
+└── Program.cs     API-endpoints och appstart
+```
 
-Det här är den generativa AI:n, och jag använder den till tre saker:
+Bygg projektet från appmappen:
 
-- bygga hela resplanen som strukturerad JSON,
-- skriva sammanfattningen av resan,
-- svara på frågor i chatten.
+```powershell
+dotnet build
+```
 
-Jag skickar en **prompt** till AI:n. alltså instruktionen som berättar för
-AI:n vad den ska göra. Min prompt har tre delar:
+API:t har bland annat följande endpoints:
 
-1. **System-prompten** (`PlanSystemPrompt`) - vilken roll AI:n har.
-2. **Schemat** (`PlanJsonSchema`) - vilken form svaret ska ha: vilka fält som måste finnas och vilka värden som är tillåtna.
-3. **Dokumenttexten** (`BuildPlanPrompt`) - all text som Document Intelligence
-   läste ur filerna.
+| Metod | Endpoint | Beskrivning |
+| --- | --- | --- |
+| `POST` | `/api/analyze` | OCR på en uppladdad fil |
+| `GET` | `/api/travel` | Lista sparade resor |
+| `POST` | `/api/travel` | Skapa en resa från extraherade dokument |
+| `GET` | `/api/travel/{id}` | Hämta en resa |
+| `PUT` | `/api/travel/{id}` | Bygg om en resa från dokumenten |
+| `POST` | `/api/travel/{id}/chat` | Skicka ett chattmeddelande |
+| `DELETE` | `/api/travel/{id}` | Ta bort en resa |
+| `DELETE` | `/api/travel/{id}/chat` | Rensa en resas chatthistorik |
 
-Prompten skickas med **Responses API** och **Structured Outputs**. Det betyder att modellen _måste_ följa schemat - den kan inte svara i något
-annat format. Därför blir svaret alltid rätt, och jag slipper tolkningsfel.
+## Data och säkerhet
 
-I chatten använder jag en annan prompt, **`BuildChatSystemPrompt`**. Den berättar
-vilken resa det gäller och att AI:n bara ska svara på frågor om just den resan.
-Tillsammans med prompten skickar jag också hela chatthistoriken, så AI:n kommer
-ihåg vad vi har sagt tidigare.
+- Dokument skickas till Azure AI Document Intelligence för textutläsning.
+- Den extraherade texten skickas till Azure OpenAI för att skapa resplanen och
+  besvara chattfrågor.
+- Resor, dokumenttext och chatthistorik sparas lokalt i `Data\travel.json`.
+- Chatthistoriken är begränsad till de senaste 40 meddelandena per resa.
+- Appen har för närvarande ingen inloggning eller användarhantering. Kör den
+  lokalt och exponera den inte offentligt utan att först lägga till autentisering
+  och granska lagring och åtkomstskydd.
 
-**Varför:** Den klarar både att bygga planen och att föra en konversation.
+## Teknik
+
+- ASP.NET Core Minimal APIs på .NET 10
+- Azure AI Document Intelligence
+- Azure OpenAI Responses API
+- HTML, CSS och vanlig JavaScript
+
+## Utvecklare
+**Alaa Alsous**
